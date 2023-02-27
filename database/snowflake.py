@@ -16,7 +16,7 @@ def connect_to_db():
     conn_string = f"snowflake://{user}:{password}@{account_identifier}/{database_name}/{schema_name}"
     engine = create_engine(conn_string)
 
-    print("****CONNECTED TO SNOWFLAKE****")
+    print("****connected to snowflake****")
 
     return engine
 
@@ -34,10 +34,11 @@ def write_to_db(table_name, df, drop_table):
         #Write the data to Snowflake, using pd_writer to speed up loading
         with engine.connect() as con:
             df.to_sql(name=table_name.lower(), con=engine, schema='PUBLIC', if_exists=if_exists, index=False, method=pd_writer)
-    except:
-        print('*****WRITE ERROR*****')
+        
+        print('*****wrote to table ' +table_name.upper()+ ' in snowflake*****')
+    except DatabaseError as db_ex:
+        print(db_ex)
     finally:
-        print('*****WROTE TO SNOWFLAKE*****')
         engine.dispose()
 
 def execute_sql(sql):
@@ -46,8 +47,10 @@ def execute_sql(sql):
         #Connect to database
         engine = connect_to_db()
         rows = 0
-        df = pd.read_sql_query(sql, engine, chunksize=50000)
-        engine.dispose()
+        df = pd.read_sql_query(sql, engine)
+        #remove_quotes and uppercase column names
+        df.columns = df.columns.to_series().apply(lambda x: x.replace('"', '').upper())
+        print('*****query executed in snowflake*****')
     except DatabaseError as db_ex:
         print(db_ex)
     finally:
