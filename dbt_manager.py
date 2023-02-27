@@ -1,9 +1,13 @@
 import dbt.intermediate.int_coffee_currency as coffee_currency
 import dbt.marts.fct_coffee_currency_insights as insights
+import dbt.intermediate.int_currency_normalized as cur_norm
 import database.snowflake as sn
 import seeds.csv_handler as csv_handler
 
 def generate_dbt_insights():
+    df = cur_norm.generate_currency_normalized()
+    sn.write_to_db('int_currency_normalized', df, True)
+
     df = coffee_currency.generate_coffee_currency()
     sn.write_to_db('int_coffee_currency', df, True)
 

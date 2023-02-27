@@ -24,6 +24,4 @@ def generate_coffee_currency():
             ' from pismo.public.coffee as coffee '\
                 'inner join pismo.public.currency as currency on coffee."Date" = currency.currency_date'
 
-    df = sn.execute_sql(sql)
-    
-    return df
+    return sn.execute_sql(sql)
